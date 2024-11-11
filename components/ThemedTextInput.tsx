@@ -8,7 +8,8 @@ export type ThemedTextInputProps = {
   style?: StyleProp<ViewStyle>
   label?: string
   onChange: (val: string) => void
-  placeholder?: string
+  placeholder?: string,
+  error?: boolean
 };
 
 export function ThemedTextInput({
@@ -16,6 +17,7 @@ export function ThemedTextInput({
   label,
   onChange,
   placeholder,
+  error
 }: ThemedTextInputProps) {
   const textColor = useThemeColor({}, 'text');
   const [text, onChangeText] = useState<string>('')
@@ -24,7 +26,7 @@ export function ThemedTextInput({
     <View style={[style, styles.container]}>
         {label && <ThemedText style={{paddingBottom: 5}}>{label}</ThemedText>}
         <TextInput 
-            style={{borderRadius: 5, borderColor: textColor, borderWidth: 2, padding: 10, color: textColor}}
+            style={[styles.textInputStyle, {color: textColor}, error ? {borderColor: 'red'} : {borderColor: textColor}]}
             value={text}
             onChangeText={(val) => {
                 onChangeText(val)
@@ -40,5 +42,10 @@ export function ThemedTextInput({
 const styles = StyleSheet.create({
     container: {
         paddingBottom: 10
-    }
+    },
+    textInputStyle: {
+      borderRadius: 5, 
+      borderWidth: 2, 
+      padding: 10,
+    },
 });

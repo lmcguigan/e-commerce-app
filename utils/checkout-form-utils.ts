@@ -1,6 +1,7 @@
 import {
     isValidPhoneNumber
 } from 'libphonenumber-js';
+import states from 'states-us';
 var validCard = require("card-validator");
 
 export enum FormActionTypes {
@@ -57,8 +58,8 @@ export const validateCardNumber = (s: string) => {
     return validationObject.isValid
 }
 
-export const validateCVC = (cvc: string, expectedCVCLength: number) => {
-    const reg = new RegExp(`^[0-9]{${expectedCVCLength}}$`)
+export const validateCVC = (cvc: string, data: FormState) => {
+    const reg = new RegExp(`^[0-9]{${data.expectedCVCLength}}$`)
     return reg.test(cvc)
 }
 
@@ -68,6 +69,16 @@ export const validateZip = (zip: string) => {
 
 export const validateExp = (exp: string) => {
     return /^(0[1-9]|1[0-2])\/?([0-9]{4}|[0-9]{2})$/.test(exp)
+}
+
+export const validateState = (s: string) => {
+    const abbrevMatch = states.find(state => state.abbreviation === s)
+    const nameMatch = states.find(state => state.name === s)
+    if(abbrevMatch !== undefined || nameMatch !== undefined){
+        return true
+    } else {
+        return false
+    }
 }
 
 
@@ -89,13 +100,15 @@ export const getValidatorForFieldName = (fieldName: FormFieldNames) => {
         case FormFieldNames.ZIPCODE:
         case FormFieldNames.CREDIT_CARD_ZIP:
             return validateZip
+        case FormFieldNames.STATE:
+            return validateState
     }
 }
 
 export const placeholders = {
     [FormFieldNames.NAME]: 'John Doe',
-    [FormFieldNames.ADDRESS]: '9919 Rabbit Street',
     [FormFieldNames.PHONE]: '+1-201-867-5309',
+    [FormFieldNames.ADDRESS]: '9919 Rabbit Street',
     [FormFieldNames.CITY]: 'Dallas',
     [FormFieldNames.CREDIT_CARD_CVC]: '000',
     [FormFieldNames.CREDIT_CARD_EXP]: '09/29',
@@ -128,7 +141,7 @@ export const formReducer = (state: FormState, action: FormActions): FormState =>
     const newFormState = {...state}
     const fieldToUpdate = newFormState.fields[action.payload.itemIndex]
     fieldToUpdate.value = action.payload.value
-    fieldToUpdate.valid = fieldToUpdate.validator(action.payload.value)
+    fieldToUpdate.valid = fieldToUpdate.validator(action.payload.value, state)
     newFormState.valid = newFormState.fields.every(e => e.valid === true)
     return newFormState
 }
