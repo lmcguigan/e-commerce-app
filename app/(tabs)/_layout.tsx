@@ -1,11 +1,24 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Tabs, usePathname } from 'expo-router';
+import React, { useEffect } from 'react';
 
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { clearCart, resetOrderStatus, selectOrderComplete } from '@/store/features/cart/cartSlice';
+import { useAppDispatch } from '@/store/hooks';
+import { useSelector } from 'react-redux';
 
 export default function TabLayout() {
+  const pathname = usePathname();
+  const dispatch = useAppDispatch();
+  const orderComplete = useSelector(selectOrderComplete)
+  useEffect(() => {
+    // clear cart and reset orderComplete after navigating away from confirmation page
+    if(pathname !== '/cart/checkout' && orderComplete){
+      dispatch(resetOrderStatus())
+      dispatch(clearCart())
+    }
+  }, [pathname])
   const colorScheme = useColorScheme();
 
   return (
@@ -14,21 +27,22 @@ export default function TabLayout() {
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
       }}>
+      <Tabs.Screen name="index" redirect/>
       <Tabs.Screen
-        name="index"
+        name="products"
         options={{
-          title: 'Home',
+          title: 'Shop',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
-          ),
+            <TabBarIcon name={focused ? 'pricetags' : 'pricetags-outline'} color={color} />
+          )
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="cart"
         options={{
-          title: 'Explore',
+          title: 'My Cart',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+            <TabBarIcon name={focused ? 'cart' : 'cart-outline'} color={color} />
           ),
         }}
       />
